@@ -1,4 +1,3 @@
-const axios = require('axios');
 const cheerio = require('cheerio');
 
 module.exports = async (req, res) => {
@@ -12,11 +11,18 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const response = await axios.get('https://www.mufap.com.pk/nav-attributes.php', {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 10) Mobile' }
+        const response = await fetch('https://www.mufap.com.pk/nav-attributes.php', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
         });
 
-        const $ = cheerio.load(response.data);
+        if (!response.ok) {
+            throw new Error(`MUFAP returned HTTP status ${response.status}`);
+        }
+
+        const html = await response.text();
+        const $ = cheerio.load(html);
         const funds = [];
 
         $('tr').each((i, row) => {
@@ -40,4 +46,3 @@ module.exports = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
-
