@@ -11,17 +11,14 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Route through a CORS proxy to bypass Cloudflare IP restrictions on datacenter nodes
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.mufap.com.pk/nav-attributes.php');
-        
-        const response = await fetch(proxyUrl, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36'
-            }
-        });
+        const apiKey = '8d4ec2667a899566fb16c1dd40b2df9f';
+        const targetUrl = encodeURIComponent('https://www.mufap.com.pk/nav-attributes.php');
+        const scraperUrl = `https://api.scraperapi.com?api_key=${apiKey}&url=${targetUrl}&render=false`;
+
+        const response = await fetch(scraperUrl);
 
         if (!response.ok) {
-            throw new Error(`Proxy fetch failed with status ${response.status}`);
+            throw new Error(`ScraperAPI status ${response.status}`);
         }
 
         const html = await response.text();
@@ -45,12 +42,11 @@ module.exports = async (req, res) => {
         });
 
         if (funds.length === 0) {
-            throw new Error("No HBL funds found in parsed HTML");
+            throw new Error('No HBL funds found in payload');
         }
 
         res.status(200).json({ success: true, timestamp: new Date().toISOString(), data: funds });
     } catch (error) {
-        // Fallback demo data array in case upstream proxy fails
         res.status(200).json({
             success: true,
             isFallback: true,
@@ -64,4 +60,3 @@ module.exports = async (req, res) => {
         });
     }
 };
-
